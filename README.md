@@ -12,11 +12,18 @@ The auto-controls are a bit wonky still, they should do a reasonably good job of
 Starting guide:
 
 Start the CAR pumps, and optionally the SJAEs at this stage to create a vacuum in the condenser.
+
 Remove the rods until criticality is established, then keep the period around 30 seconds to keep it powering up at a controlled rate.  When you approach that point you'll want to slow the rod speed down so that the prompt jump from moving the rods doesn't call the period to fall too much.
+
 Higher power will start up faster, but too high will overwhelm the cleaning pumps which are the main thing keeping the water level under control until steam is being consumed
 Stablize it at a reasonable level and continue pulling rods to keep power steady wait for the coolant to boil.
+
 Open the MSIV, and potentially the bypass slightly to help keep the coolant level down while getting up to operating pressure.
+
 Engage the turbine turning gear, and open the turbine valve to put steam in to get it turning.  Ideally hold it around 500 rpm while waiting for the turbine to slowly warm up to avoid exceeding differential expansion limits.  This simulation also allows ramping it up for faster warming. 
+
 When in within 2 rpm of 1800, sync the turbine.
+
 When the coolant level falls below the ideal point in the reactor, open the feedwater valves to keep the level constant, and open the condenser valves to keep the feedwater suction levels up.  Careful about opening the values too fast, espesically with low turbine output, the cool water flowing into the reactor will likely cause the reactivity to spike.  
+
 From there, just continue raising the power and keeping things stable until you reach the reactor's full output of 3.926 GW (3926 MW)
