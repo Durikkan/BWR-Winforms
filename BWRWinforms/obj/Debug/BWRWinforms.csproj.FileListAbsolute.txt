@@ -1,0 +1,11 @@
+E:\programming\BWRWinforms\BWRWinforms\bin\Debug\BWRWinforms.exe.config
+E:\programming\BWRWinforms\BWRWinforms\bin\Debug\BWRWinforms.exe
+E:\programming\BWRWinforms\BWRWinforms\bin\Debug\BWRWinforms.pdb
+E:\programming\BWRWinforms\BWRWinforms\obj\Debug\BWRWinforms.csproj.AssemblyReference.cache
+E:\programming\BWRWinforms\BWRWinforms\obj\Debug\BWRWinforms.csproj.SuggestedBindingRedirects.cache
+E:\programming\BWRWinforms\BWRWinforms\obj\Debug\BWRWinforms.Form1.resources
+E:\programming\BWRWinforms\BWRWinforms\obj\Debug\BWRWinforms.Properties.Resources.resources
+E:\programming\BWRWinforms\BWRWinforms\obj\Debug\BWRWinforms.csproj.GenerateResource.cache
+E:\programming\BWRWinforms\BWRWinforms\obj\Debug\BWRWinforms.csproj.CoreCompileInputs.cache
+E:\programming\BWRWinforms\BWRWinforms\obj\Debug\BWRWinforms.exe
+E:\programming\BWRWinforms\BWRWinforms\obj\Debug\BWRWinforms.pdb
