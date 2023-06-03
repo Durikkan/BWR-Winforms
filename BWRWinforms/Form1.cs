@@ -333,7 +333,9 @@ namespace BWRWinforms
                     double goal = 1800;
                     if (listBox2.SelectedIndex == 0)
                         goal = 500;
-                    currentPIDRPM = MoveTowards(currentPIDRPM, goal, 0.5);
+                    
+                    if (turbineDifferentialExpansion < .75)
+                        currentPIDRPM = MoveTowards(currentPIDRPM, goal, 1);
                     double output = TurbineRPMpid.CalculateOutput(turbineRPM, currentPIDRPM);
                     double speed = .005;
                     double diff = Math.Abs(output - turbineValve);
@@ -440,7 +442,7 @@ namespace BWRWinforms
 
                 turbineCasingTemperature = Lerp(turbineCasingTemperature, startingTemperature, 0.00005 * kgTransfer);
                 turbineRotorTemperature = Lerp(turbineRotorTemperature, startingTemperature, 0.0001 * kgTransfer);
-                turbineDifferentialExpansion = (turbineCasingTemperature - turbineRotorTemperature) / 30;
+                turbineDifferentialExpansion = (turbineRotorTemperature - turbineCasingTemperature) / 30;
 
                 double newAverage = Lerp(turbineRecentAveragePower, HPTPower + LPTPower, .01);
                 double powerDelta = Math.Abs(newAverage - turbineRecentAveragePower);
@@ -451,7 +453,7 @@ namespace BWRWinforms
 
                 if (turbineVibration > 1)
                     TurbineTrip("Turbine Trip - due to high vibration");
-                if (turbineDifferentialExpansion > 1)
+                if (turbineDifferentialExpansion > 1 || turbineDifferentialExpansion < 1)
                     TurbineTrip("Turbine Trip - due to high differential expansion");
 
                 void HeaterStep(double newPressure, double tempMult, double steamLossPct, double endQuality, HeatExchanger exch, bool HP)
@@ -825,8 +827,9 @@ namespace BWRWinforms
             {
                 if (Reactor.WaterLevel > 13.55)
                 {
-                    Reactor.WaterKg -= 4.2;
-                    AddWaterToCondenser(4.2, Reactor.WaterTemp);
+                    double val = Math.Min((Reactor.WaterLevel - 13.55) * 20 * 4.2, 4.2); 
+                    Reactor.WaterKg -= val;
+                    AddWaterToCondenser(val, Reactor.WaterTemp);
                 }
             }
 
@@ -1060,6 +1063,7 @@ namespace BWRWinforms
             if (synced == false && turbineValve == 0)
                 return; //Assumed already tripped
             numericUpDownTurbineValve.Value = 0;
+            checkBoxTurbineAuto.Checked = false;
             turbineValve = 0;
             MakeReport(reason);
             reversePowerFrames = 0;
@@ -1221,7 +1225,10 @@ namespace BWRWinforms
                 sb.AppendLine("Reactor Level Low");
             }
 
-            if (Reactor.Period > 0 && Reactor.Period < 20)
+            
+            if (Reactor.Period > 0 && Reactor.Period < 10)
+                sb.AppendLine("Reactor period extremely low, SCRAM imminent");
+            else if (Reactor.Period > 0 && Reactor.Period < 20)
                 sb.AppendLine("Reactor period low");
 
             if (Reactor.PowerPct() > .25 && Reactor.RecirculationValve < .4)
@@ -1243,6 +1250,8 @@ namespace BWRWinforms
                 sb.AppendLine("Turbine Vibration High");
             if (turbineDifferentialExpansion > .8)
                 sb.AppendLine("Turbine Differential Expansion High");
+            if (turbineDifferentialExpansion < -.8)
+                sb.AppendLine("Turbine Differential Expansion High (in the negative direction)");
 
             if (feedwaterTankWaterKg > 130000)
                 sb.AppendLine("Feedwater Suction Water Level High");

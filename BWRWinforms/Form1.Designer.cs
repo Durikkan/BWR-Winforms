@@ -696,7 +696,7 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(175, 15);
+            this.label11.Location = new System.Drawing.Point(126, 15);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(41, 13);
             this.label11.TabIndex = 30;
@@ -954,7 +954,7 @@
             this.Controls.Add(this.numericUpDownMSIV);
             this.Controls.Add(this.richTextBox1);
             this.Name = "Form1";
-            this.Text = "Simplistic BWR Simulation";
+            this.Text = "Simplistic BWR Simulation Version 0.8";
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPCM)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRods)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMSIV)).EndInit();

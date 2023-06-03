@@ -79,12 +79,16 @@ namespace BWRWinforms
         internal double FuelEnergy;
         internal double VoidFraction;
 
+        double previousPCM;
+        internal double periodScramGrace = 0;
+
         internal double VesselTemp; //Shell then should be 1000 tons* 1000 kg/ton* 1000 g/kg* .5 = 500MJ per degree
 
         internal double[] VoidFractionHistory = new double[20];
 
         internal void Process()
         {
+            previousPCM = pcm;
             pcm = 0;
             if (Form.radioButtonPCM.Checked)
             {
@@ -137,22 +141,38 @@ namespace BWRWinforms
                 }
                 else
                 {
-                    double setPower = Convert.ToDouble(Form.textBoxMWTarget.Text) * (double)Form.numericUpDownMWMultiplier.Value;
+                    double setPower = 0;
+                    if (double.TryParse(Form.textBoxMWTarget.Text, out double result))
+                        setPower = result * (double)Form.numericUpDownMWMultiplier.Value;
                     double setPoint;
                     double speed = 0.0001;
                     double pctOff = Power / (setPower * 1000000);
                     if (pctOff < 1)
                         pctOff = 1 / pctOff;
+                    double maxPcm = 150;
+                    if (pctOff < 1.2)
+                    {
+                        maxPcm = (pctOff - 1) * 750;
+                    }
                     if (Power > setPower * 1000000)
                     {
                         setPoint = 1;
                     }
                     else
                     {
-                        setPoint = 0;
+                        if (previousPCM > maxPcm)
+                            setPoint = 1;
+                        else if (previousPCM < maxPcm * .9)
+                            setPoint = 0;
+                        else
+                            setPoint = ControlRodPos;
+                        if (previousPCM > 100)
+                            speed /= 2;
+                        if (previousPCM > 120)
+                            speed /= 2;
                     }
 
-                    if (pctOff < 1.07)
+                    if (pctOff < 1.1)
                         speed /= 2;
 
                     if (pctOff < 1.015)
@@ -282,8 +302,14 @@ namespace BWRWinforms
 
             if (Period > 0 && Period < 10 && Form.radioButtonPCM.Checked == false && Form.checkBoxProtection.Checked)
             {
-                Scram("Reactor SCRAM - reactor period dangerously low (less than 10 seconds)");
+                periodScramGrace++;
+                if (periodScramGrace > 3)
+                {
+                    Scram("Reactor SCRAM - reactor period dangerously low (less than 10 seconds)");
+                }
             }
+            else
+                periodScramGrace = 0;
 
             if (PowerPct() > 1.18 && Form.checkBoxProtection.Checked)
             {
@@ -367,7 +393,12 @@ namespace BWRWinforms
 
             if (Form.checkBoxRCIC.Checked)
             {
-                Form.numericUpDownMSIV.Value = 0;
+                if (Form.numericUpDownMSIV.Value > 0)
+                {
+                    Form.numericUpDownMSIV.Value = 0;
+                    Form.MakeReport("MSIV valve forced closed when RCIC is active");
+                }
+                
 
                 var flow = Pressure / 100;
                 SteamKg -= flow;
