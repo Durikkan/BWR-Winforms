@@ -220,10 +220,11 @@ namespace BWRWinforms
             RecirculationKg = RecirculationValve * 14530;
             Form.totalPumpPowerUsage = 800000 * RecirculationValve;
             WaterTemp += 800000 * RecirculationValve / 4200 / WaterKg;
-            if (lastSteamGenerated == 0)
+            if (lastSteamGenerated == 0 || WaterTemp < 102) //The watertemp is a little bit of a dirty hack to stop the initial boiling from causing a scram
                 VoidFraction = 0;
             else
                 VoidFraction = lastSteamGenerated * 10 / RecirculationKg;
+
             double voidFractionTotal = VoidFraction + VoidFractionHistory[19];
             for (int i = 18; i >= 0; i--)
             {

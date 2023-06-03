@@ -954,7 +954,7 @@
             this.Controls.Add(this.numericUpDownMSIV);
             this.Controls.Add(this.richTextBox1);
             this.Name = "Form1";
-            this.Text = "Simplistic BWR Simulation Version 0.8";
+            this.Text = "Simplistic BWR Simulation Version 0.81";
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPCM)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRods)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMSIV)).EndInit();

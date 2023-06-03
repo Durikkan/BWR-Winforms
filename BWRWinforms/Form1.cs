@@ -262,7 +262,7 @@ namespace BWRWinforms
         readonly double syncedTurbineEnergy = 0.5 * turbineI * 188.5 * 188.5;
 
         internal PIDController Turbinepid = new PIDController(-.005, -.005, -.008);
-        internal PIDController TurbineRPMpid = new PIDController(.005, .005, .008);
+        internal PIDController TurbineRPMpid = new PIDController(.005, .003, .008);
 
         double finalFeedwaterTemp = 0;
         readonly HeatExchanger hp1 = new HeatExchanger(false);
@@ -335,7 +335,7 @@ namespace BWRWinforms
                         goal = 500;
                     
                     if (turbineDifferentialExpansion < .75)
-                        currentPIDRPM = MoveTowards(currentPIDRPM, goal, 1);
+                        currentPIDRPM = MoveTowards(currentPIDRPM, goal, 0.5);
                     double output = TurbineRPMpid.CalculateOutput(turbineRPM, currentPIDRPM);
                     double speed = .005;
                     double diff = Math.Abs(output - turbineValve);
@@ -453,7 +453,7 @@ namespace BWRWinforms
 
                 if (turbineVibration > 1)
                     TurbineTrip("Turbine Trip - due to high vibration");
-                if (turbineDifferentialExpansion > 1 || turbineDifferentialExpansion < 1)
+                if (turbineDifferentialExpansion > 1 || turbineDifferentialExpansion < -1)
                     TurbineTrip("Turbine Trip - due to high differential expansion");
 
                 void HeaterStep(double newPressure, double tempMult, double steamLossPct, double endQuality, HeatExchanger exch, bool HP)
@@ -1186,14 +1186,15 @@ namespace BWRWinforms
         private void button8_Click(object sender, EventArgs e)
         {
             radioButtonMWTarget.Checked = true;
-            Reactor.WaterTemp = 100;
-            Reactor.FuelTemp = 100;
-            Reactor.ControlRodPos = .615;
-            Reactor.Power = 400000000;
+            Reactor.WaterTemp = 95;
+            Reactor.FuelTemp = 95;
+            Reactor.ControlRodPos = .622;
+            Reactor.Power = 392600000;
             numericUpDownMWMultiplier.Value = (decimal).1;
-            Reactor.BasePower = 400000000;
-            Reactor.RecirculationValve = .25;
-            Reactor.VesselTemp = 80;
+            Reactor.BasePower = 392600000;
+            Reactor.RecirculationValve = .3;
+            numericUpDownRecirculation.Value = (decimal).3;
+            Reactor.VesselTemp = 90;
         }
 
         private void button2_Click_1(object sender, EventArgs e)
