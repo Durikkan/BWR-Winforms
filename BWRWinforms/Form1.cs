@@ -158,7 +158,7 @@ namespace BWRWinforms
 		-Improve Quality of the Auto controls - I think they should all be decent except Turbine and Recirculation now - possibly upgrade some to PIDs			
         Tempted to do a simple decay heat though I'd have to make up the formula for changing power levels, maybe the average power level and reactor uptime
           Though when it's off it should just reduce both over time?				
-		
+		Opening turbine valve with closed MSIV made NaN feedwater temperature -- I have no idea how this happened
 
 		Then at the end, do a pass to see how much it is to the calibration points below
 		
@@ -200,7 +200,7 @@ namespace BWRWinforms
 
         int stat = 0;
 
-
+        internal bool Interrupt = false;
 
         int gameTick = 0;
 
@@ -261,8 +261,8 @@ namespace BWRWinforms
         double turbineSteamEfficiency = 0;
         readonly double syncedTurbineEnergy = 0.5 * turbineI * 188.5 * 188.5;
 
-        internal PIDController Turbinepid = new PIDController(-.005, -.005, -.008);
-        internal PIDController TurbineRPMpid = new PIDController(.005, .003, .008);
+        internal PIDController Turbinepid = new PIDController(-.002, -.001, -.008);
+        internal PIDController TurbineRPMpid = new PIDController(.004, .002, .008);
 
         double finalFeedwaterTemp = 0;
         readonly HeatExchanger hp1 = new HeatExchanger(false);
@@ -319,25 +319,54 @@ namespace BWRWinforms
             {
                 if (listBox2.SelectedIndex == 2)
                 {
-                    double output = Turbinepid.CalculateOutput(Reactor.Pressure, 7170);
-                    double speed = .005;
-                    double diff = Math.Abs(output - turbineValve);
-                    if (diff < .001)
-                        diff = .001;
-                    if (diff < .05)
-                        speed = speed / .05 * diff;
-                    turbineValve = MoveTowards(turbineValve, output, speed);
+                    double distance = Math.Abs(7170 - Reactor.Pressure);
+                    double rate = Reactor.Pressure - Reactor.PreviousPressure;
+                    double speed = .0025;
+                    if (distance < 10)
+                    {
+                        if (rate < 0)
+                            turbineValve = MoveTowards(turbineValve, 0, .0005);
+                        if (rate > 0)
+                            turbineValve = MoveTowards(turbineValve, 1, .0005);
+                        speed /= 2;
+                    }
+                    if (Reactor.Pressure > 7170)
+                    {
+                        if (rate > 0)
+                            turbineValve = MoveTowards(turbineValve, 1, speed);
+                        else
+                            turbineValve = MoveTowards(turbineValve, 1, .0001);
+                    }
+                    else
+                    {
+                        if (rate < 0)
+                            turbineValve = MoveTowards(turbineValve, 0, speed);
+                        else
+                        {
+                            if (distance > 30 * rate)
+                                turbineValve = MoveTowards(turbineValve, 0, speed / 2);
+                            if (distance < 10 * rate)
+                                turbineValve = MoveTowards(turbineValve, 1, .0001);
+                            else
+                                turbineValve = MoveTowards(turbineValve, 0, .0001);
+                        }
+                    }
+
                 }
                 else
                 {
                     double goal = 1800;
                     if (listBox2.SelectedIndex == 0)
                         goal = 500;
-                    
-                    if (turbineDifferentialExpansion < .75)
-                        currentPIDRPM = MoveTowards(currentPIDRPM, goal, 0.5);
+                    double goalSpeed = 0.5;
+                    if (turbineDifferentialExpansion > .6)
+                    {
+                        goalSpeed *= 3.333 * (.9 - turbineDifferentialExpansion);
+                    }
+                    if (turbineDifferentialExpansion < .9)
+                        currentPIDRPM = MoveTowards(currentPIDRPM, goal, goalSpeed);
                     double output = TurbineRPMpid.CalculateOutput(turbineRPM, currentPIDRPM);
-                    double speed = .005;
+                    double speed = .0025;
                     double diff = Math.Abs(output - turbineValve);
                     if (diff < .001)
                         diff = .001;
@@ -476,6 +505,11 @@ namespace BWRWinforms
 
 
             }
+            else
+            { //Update these even when turbine valve is closed
+                turbineDifferentialExpansion = (turbineRotorTemperature - turbineCasingTemperature) / 30;
+                turbineVibration += Math.Abs(turbineDifferentialExpansion / 1000);
+            }
 
             turbineCasingTemperature = Lerp(turbineCasingTemperature, baseTemperature, 0.000004);
             turbineRotorTemperature = Lerp(turbineRotorTemperature, turbineCasingTemperature, 0.0006);
@@ -523,9 +557,22 @@ namespace BWRWinforms
                 checkBoxTurningGear.Checked = true;
             }
 
+            double bypassTarget = (double)numericUpDownBypassValve.Value;
+            if (checkBoxAutoBypass.Checked)
+            {
+                if (Reactor.Pressure > 7200)
+                {
+                    bypassTarget = Math.Min((Reactor.Pressure - 7200) / 200, 1);
+                }
+                else if (turbineValve > 0 && Reactor.WaterLevel > 14.1)
+                {
+                    bypassTarget = Math.Min((Reactor.WaterLevel - 14.1) * 10, 1);
+                }
+                else
+                    bypassTarget = 0;
+            }
 
-
-            bypassValve = MoveTowards(bypassValve, (double)numericUpDownBypassValve.Value, 0.01);
+            bypassValve = MoveTowards(bypassValve, bypassTarget, 0.01);
 
             if (bypassValve > 0)
             {
@@ -690,7 +737,7 @@ namespace BWRWinforms
 
             if (condenserOutflowValve > 0)
             {
-                var val = condenserOutflowValve * 151.4;                
+                var val = condenserOutflowValve * 151.4;
                 if (val > condenserWaterKg)
                     val = condenserWaterKg;
                 double initial = val;
@@ -719,27 +766,7 @@ namespace BWRWinforms
 
             if (checkBoxFeedAuto.Checked)
             {
-                var diff = Math.Abs(13.5 - Reactor.WaterLevel);
-                var change = Math.Min(diff * .04, .0075);
-                if (Reactor.WaterLevel > 13.5)
-                {
-                    if (Reactor.WaterLevelGoingOutOfRange && diff > .01)
-                        feedwaterValve = MoveTowards(feedwaterValve, 0, 0.015);
-                    else if (Reactor.WaterLevelGoingOutOfRange)
-                        feedwaterValve = MoveTowards(feedwaterValve, 0, change * 2);
-                    else
-                        feedwaterValve = MoveTowards(feedwaterValve, 0, change);
-                }
-                else
-                {
-                    if (Reactor.WaterLevelGoingOutOfRange && diff > .01)
-                        feedwaterValve = MoveTowards(feedwaterValve, 1, 0.015);
-                    else if (Reactor.WaterLevelGoingOutOfRange)
-                        feedwaterValve = MoveTowards(feedwaterValve, 1, change * 2);
-                    else
-                        feedwaterValve = MoveTowards(feedwaterValve, 1, change);
-                }
-
+                AutoFeedwater();
             }
             else
                 feedwaterValve = MoveTowards(feedwaterValve, (double)numericUpDownFeedwaterPumps.Value, .015);
@@ -827,7 +854,7 @@ namespace BWRWinforms
             {
                 if (Reactor.WaterLevel > 13.55)
                 {
-                    double val = Math.Min((Reactor.WaterLevel - 13.55) * 20 * 4.2, 4.2); 
+                    double val = Math.Min((Reactor.WaterLevel - 13.55) * 20 * 4.2, 4.2);
                     Reactor.WaterKg -= val;
                     AddWaterToCondenser(val, Reactor.WaterTemp);
                 }
@@ -853,7 +880,7 @@ namespace BWRWinforms
             generatedNetPower = generatedPower - totalPumpPowerUsage * 10 - 15000000;
             totalNetGeneratedPower += generatedNetPower / 10;
 
-            if (report)
+            if (report || Interrupt)
             {
                 double waterEnergy = Reactor.WaterTemp * 4200 * Reactor.WaterKg;
                 double steamEnergy = 1000 * Reactor.SteamKg * stmProp.hgp(Reactor.Pressure, ref stat, 0);
@@ -965,6 +992,8 @@ namespace BWRWinforms
                 feedwaterTankGoingOutOfRange = false;
             previousFeedwaterTankWaterLevel = feedwaterTankWaterKg;
         }
+
+
 
         private void timer1_Tick(object sender, EventArgs e)
         {
@@ -1116,11 +1145,7 @@ namespace BWRWinforms
 
         private void button5_Click(object sender, EventArgs e)
         {
-            for (int i = 0; i < 99; i++)
-            {
-                SimTick(false);
-            }
-            SimTick(true);
+            AdvanceFrames(100);
         }
 
         private void button6_Click(object sender, EventArgs e)
@@ -1137,7 +1162,7 @@ namespace BWRWinforms
             checkBoxSJAEs.Checked = true;
             condenserNonCondensibleKg = 7;
             Reactor.WaterKg = 335000;
-            Reactor.WaterTemp = 287.9;
+            Reactor.WaterTemp = 287.7;
             Reactor.FuelTemp = 590;
             Reactor.ControlRodPos = .2825;
             Reactor.Power = 3926000000;
@@ -1162,13 +1187,9 @@ namespace BWRWinforms
             Reactor.SetHigh();
             listBox2.SelectedIndex = 2;
 
-            //Rather than set it exactly as even a small error makes it fluctuate severely, just let it sim a bit to reach rough equalibrium
             checkBoxProtection.Checked = false;
-            for (int i = 0; i < 99; i++)
-            {
-                SimTick(false);
-            }
-            SimTick(true);
+            //Rather than set it exactly as even a small error makes it fluctuate severely, just let it sim a bit to reach rough equalibrium
+            AdvanceFrames(100);
             EnergyTracker = new EnergyTracker();
             totalGeneratedPower = 0;
             totalNetGeneratedPower = 0;
@@ -1186,24 +1207,36 @@ namespace BWRWinforms
         private void button8_Click(object sender, EventArgs e)
         {
             radioButtonMWTarget.Checked = true;
-            Reactor.WaterTemp = 95;
-            Reactor.FuelTemp = 95;
-            Reactor.ControlRodPos = .622;
+            Reactor.WaterTemp = 100;
+            Reactor.FuelTemp = 100;
+            Reactor.ControlRodPos = .616;
             Reactor.Power = 392600000;
             numericUpDownMWMultiplier.Value = (decimal).1;
             Reactor.BasePower = 392600000;
             Reactor.RecirculationValve = .3;
             numericUpDownRecirculation.Value = (decimal).3;
-            Reactor.VesselTemp = 90;
+            Reactor.VesselTemp = 95;
+            checkBoxSJAEs.Checked = true;
+            condenserNonCondensibleKg = 7;
+        }
+
+        private void AdvanceFrames(int frames)
+        {
+            Interrupt = false;
+            for (int i = 0; i < frames - 1; i++)
+            {
+                SimTick(false);
+                if (Interrupt)
+                    return;
+            }
+            if (Interrupt)
+                return;
+            SimTick(true);
         }
 
         private void button2_Click_1(object sender, EventArgs e)
         {
-            for (int i = 0; i < 599; i++)
-            {
-                SimTick(false);
-            }
-            SimTick(true);
+            AdvanceFrames(600);
         }
 
         private void DisplayWarnings()
@@ -1226,7 +1259,7 @@ namespace BWRWinforms
                 sb.AppendLine("Reactor Level Low");
             }
 
-            
+
             if (Reactor.Period > 0 && Reactor.Period < 10)
                 sb.AppendLine("Reactor period extremely low, SCRAM imminent");
             else if (Reactor.Period > 0 && Reactor.Period < 20)
@@ -1283,6 +1316,77 @@ namespace BWRWinforms
             }
 
         }
+        private void AutoFeedwater()
+        { //This is down here because it's bulky
+            var diff = Math.Abs(13.5 - Reactor.WaterLevel);
+            var change = Math.Min(diff * .04, .0075);
+            if (diff < .01)
+            {
+                bool under = 13.5 - Reactor.WaterLevel > 0;
+                int target = under ? 1 : 0;
+                double smallRate = .0005;
+                if (diff < .001)
+                    smallRate /= 4;
+                if (diff < .0001)
+                    smallRate /= 4;
+
+                feedwaterValve = MoveTowards(feedwaterValve, target, 0.00005);
+
+                if (Reactor.WaterLevelGoingOutOfRange)
+                {
+                    feedwaterValve = MoveTowards(feedwaterValve, target, smallRate);
+                }
+                else
+                {
+                    smallRate /= 4;
+                    feedwaterValve = MoveTowards(feedwaterValve, target, smallRate);
+                }
+
+            }
+            else if (Reactor.WaterLevel > 13.5)
+            {
+                if (diff < .1)
+                {
+                    if (Reactor.WaterLevelGoingOutOfRange)
+                        feedwaterValve = MoveTowards(feedwaterValve, 0, 0.0005);
+                    else
+                        feedwaterValve = MoveTowards(feedwaterValve, 1, 0.0005);
+                }
+
+                if (Reactor.WaterLevelGoingOutOfRange && diff > .01)
+                    feedwaterValve = MoveTowards(feedwaterValve, 0, 0.015);
+                else if (Reactor.WaterLevelGoingOutOfRange)
+                    feedwaterValve = MoveTowards(feedwaterValve, 0, change * 2);
+                else
+                    feedwaterValve = MoveTowards(feedwaterValve, 0, change);
+            }
+            else if (finalFeedwaterTemp < 200)
+            {
+                change /= 6;
+                if (Reactor.WaterLevelGoingOutOfRange)
+                    feedwaterValve = MoveTowards(feedwaterValve, 1, change);
+                else
+                    feedwaterValve = MoveTowards(feedwaterValve, 1, change / 4);
+            }
+            else
+            {
+                if (diff < .1)
+                {
+                    if (Reactor.WaterLevelGoingOutOfRange)
+                        feedwaterValve = MoveTowards(feedwaterValve, 1, 0.001);
+                    else
+                        feedwaterValve = MoveTowards(feedwaterValve, 0, 0.001);
+                }
+                if (Reactor.WaterLevelGoingOutOfRange && diff > .01)
+                    feedwaterValve = MoveTowards(feedwaterValve, 1, 0.015);
+                else if (Reactor.WaterLevelGoingOutOfRange)
+                    feedwaterValve = MoveTowards(feedwaterValve, 1, change * 2);
+                else
+                    feedwaterValve = MoveTowards(feedwaterValve, 1, change);
+            }
+        }
     }
+
+
 
 }

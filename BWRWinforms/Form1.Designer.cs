@@ -97,6 +97,7 @@
             this.label19 = new System.Windows.Forms.Label();
             this.label20 = new System.Windows.Forms.Label();
             this.listBox2 = new System.Windows.Forms.ListBox();
+            this.checkBoxAutoBypass = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPCM)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRods)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMSIV)).BeginInit();
@@ -895,11 +896,22 @@
             this.listBox2.TabIndex = 65;
             this.listBox2.SelectedIndexChanged += new System.EventHandler(this.listBox2_SelectedIndexChanged);
             // 
+            // checkBoxAutoBypass
+            // 
+            this.checkBoxAutoBypass.AutoSize = true;
+            this.checkBoxAutoBypass.Location = new System.Drawing.Point(553, 221);
+            this.checkBoxAutoBypass.Name = "checkBoxAutoBypass";
+            this.checkBoxAutoBypass.Size = new System.Drawing.Size(48, 17);
+            this.checkBoxAutoBypass.TabIndex = 66;
+            this.checkBoxAutoBypass.Text = "Auto";
+            this.checkBoxAutoBypass.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1169, 713);
+            this.Controls.Add(this.checkBoxAutoBypass);
             this.Controls.Add(this.listBox2);
             this.Controls.Add(this.label20);
             this.Controls.Add(this.label19);
@@ -954,7 +966,7 @@
             this.Controls.Add(this.numericUpDownMSIV);
             this.Controls.Add(this.richTextBox1);
             this.Name = "Form1";
-            this.Text = "Simplistic BWR Simulation Version 0.81";
+            this.Text = "Simplistic BWR Simulation Version 0.82";
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownPCM)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownRods)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMSIV)).EndInit();
@@ -1045,6 +1057,7 @@
         private System.Windows.Forms.Label label19;
         private System.Windows.Forms.Label label20;
         private System.Windows.Forms.ListBox listBox2;
+        internal System.Windows.Forms.CheckBox checkBoxAutoBypass;
     }
 }
 

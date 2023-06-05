@@ -69,6 +69,8 @@ namespace BWRWinforms
         internal double ControlRodPos = 1;
         internal double RecirculationValve = 0;
 
+        internal double PreviousPressure;
+
         internal double pcm = 0;
 
         static readonly StmProp stmProp = new StmProp();
@@ -84,10 +86,11 @@ namespace BWRWinforms
 
         internal double VesselTemp; //Shell then should be 1000 tons* 1000 kg/ton* 1000 g/kg* .5 = 500MJ per degree
 
-        internal double[] VoidFractionHistory = new double[20];
+        internal double[] VoidFractionHistory = new double[3];
 
         internal void Process()
         {
+            PreviousPressure = Pressure;
             previousPCM = pcm;
             pcm = 0;
             if (Form.radioButtonPCM.Checked)
@@ -149,11 +152,7 @@ namespace BWRWinforms
                     double pctOff = Power / (setPower * 1000000);
                     if (pctOff < 1)
                         pctOff = 1 / pctOff;
-                    double maxPcm = 150;
-                    if (pctOff < 1.2)
-                    {
-                        maxPcm = (pctOff - 1) * 750;
-                    }
+                    double maxPcm = 170;
                     if (Power > setPower * 1000000)
                     {
                         setPoint = 1;
@@ -162,14 +161,12 @@ namespace BWRWinforms
                     {
                         if (previousPCM > maxPcm)
                             setPoint = 1;
-                        else if (previousPCM < maxPcm * .9)
+                        else if (previousPCM < maxPcm * .98)
                             setPoint = 0;
                         else
                             setPoint = ControlRodPos;
                         if (previousPCM > 100)
-                            speed /= 2;
-                        if (previousPCM > 120)
-                            speed /= 2;
+                            speed /= Math.Pow(previousPCM / 100, 4);
                     }
 
                     if (pctOff < 1.1)
@@ -191,7 +188,7 @@ namespace BWRWinforms
                 pcm = ControlRodPos * -18200 + 12740;
             }
 
-            if (WaterTemp > 99 && Form.numericUpDownRecirculation.Value < (decimal).3)
+            if (WaterTemp > 90 && Form.numericUpDownRecirculation.Value < (decimal).3)
             {
                 Form.numericUpDownRecirculation.Value = (decimal)0.3;
                 Form.MakeReport("Water temperature above 90 C without baseline recirculation, increasing pumps to 30%");
@@ -225,15 +222,15 @@ namespace BWRWinforms
             else
                 VoidFraction = lastSteamGenerated * 10 / RecirculationKg;
 
-            double voidFractionTotal = VoidFraction + VoidFractionHistory[19];
-            for (int i = 18; i >= 0; i--)
+            double voidFractionTotal = VoidFraction + VoidFractionHistory[2];
+            for (int i = 1; i >= 0; i--)
             {
                 voidFractionTotal += VoidFractionHistory[i];
                 VoidFractionHistory[i + 1] = VoidFractionHistory[i];
             }
             VoidFractionHistory[0] = VoidFraction;
 
-            VoidFraction = voidFractionTotal / 21;
+            VoidFraction = voidFractionTotal / 4;
 
 
             if (Form.checkBoxRHR.Checked)
@@ -274,9 +271,11 @@ namespace BWRWinforms
             {
                 Power = BasePower * 650;
                 Form.MakeReport("Prompt critical!  This would result in severe damage to the fuel or possibly the entire reactor");
+                Form.Interrupt = true;
+                Form.checkBoxPause.Checked = true;
             }
 
-            double modPeriod = Period / Math.Pow(pcm, pcm / 1400); //Used to approximate the extra boost in the research reactor
+            double modPeriod = Period / Math.Pow(pcm, pcm / 3500); //Used to approximate the extra boost in the research reactor
 
             if (Period >= 0)
                 PowerGain = (Power * Math.Pow(Math.E, 1 / modPeriod * 0.1)) - Power;
@@ -284,11 +283,12 @@ namespace BWRWinforms
                 PowerGain = -((Power * Math.Pow(Math.E, 1 / -Period * 0.1)) - Power);
 
 
-            BasePower += PowerGain + delayedPower;
-            Power += PowerGain + delayedPower;
+            BasePower += PowerGain + delayedPower + minPower;
 
-            Power += minPower;
-            BasePower += minPower;
+            if (pcm < 650) //Put here as well to ensure that the ending power matches the beginning power next cycle, and to make the Period calc more accurate
+                Power = BasePower * 650 / (650 - pcm);
+            else
+                Power = BasePower * 650;
 
             for (int i = 0; i < 6; i++)
             {
@@ -374,9 +374,9 @@ namespace BWRWinforms
 
             if (boilingTemperature < 100)
                 boilingTemperature = 100;
-            if (SteamKg > 0 && WaterTemp < boilingTemperature)
+            if (SteamKg > 0 && WaterTemp < boilingTemperature - .2)
             { //Not a perfect method of reactor steam condensing, but it would rarely happen.  
-                var excessEnergy = 10000 * (boilingTemperature - WaterTemp) + 100;
+                var excessEnergy = 10000 * (boilingTemperature - .2 - WaterTemp) + 100;
                 var energyPerKg = stmProp.hgp(Pressure, ref stat, 0) - stmProp.hfp(Pressure, ref stat, 0);
                 var massChange = excessEnergy / energyPerKg;
                 if (massChange > SteamKg)
@@ -443,7 +443,7 @@ namespace BWRWinforms
         internal void SetHigh()
         {
             lastSteamGenerated = 211.6;
-            for (int i = 0; i < 20; i++)
+            for (int i = 0; i < 3; i++)
             {
                 VoidFractionHistory[i] = 0.1457;
             }
