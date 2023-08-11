@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static BWRWinforms.Utility;
 
 namespace BWRWinforms
 {
@@ -172,34 +173,34 @@ namespace BWRWinforms
         internal string GetReport()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine($"Fuel: \t\t\t{Form1.ToSI(_fuelGeneratedEnergy * 10, capToZero: true) + "W",-11}\t {Form1.ToSI(totalFuelGeneratedEnergy, capToZero: true)}J");
-            sb.AppendLine($"Fuel to Coolant:  \t\t{Form1.ToSI(_fuelToWaterEnergy * 10, capToZero: true) + "W",-11}\t {Form1.ToSI(totalFuelToWaterEnergy, capToZero: true)}J");
-            sb.AppendLine($"Coolant to Steam:  \t\t{Form1.ToSI(_coolantToSteamEnergy * 10, capToZero: true) + "W",-11}\t {Form1.ToSI(totalCoolantToSteamEnergy, capToZero: true)}J");
-            sb.AppendLine($"Coolant to Vessel:  \t\t{Form1.ToSI(_coolantToVesselEnergy * 10, capToZero: true) + "W",-11}\t {Form1.ToSI(totalCoolantToVesselEnergy, capToZero: true)}J");
-            sb.AppendLine($"Steam to Pipe:  \t\t{Form1.ToSI(_steamToPipeEnergy * 10, capToZero: true) + "W",-11}\t {Form1.ToSI(totalSteamToPipeEnergy, capToZero: true)}J");
-            sb.AppendLine($"Pipe to Turbine:  \t\t{Form1.ToSI(_pipeToTurbineEnergy * 10, capToZero: true) + "W",-11}\t {Form1.ToSI(totalPipeToTurbineEnergy, capToZero: true)}J");
-            sb.AppendLine($"Pipe to MSR:  \t\t{Form1.ToSI(PipeToMainSteamReheatEnergy * 10, capToZero: true) + "W",-11}\t {Form1.ToSI(totalPipeToMainSteamReheatEnergy, capToZero: true)}J");
-            sb.AppendLine($"MSR Applied:  \t\t{Form1.ToSI(MainSteamReheatApplied * 10, capToZero: true) + "W",-11}\t {Form1.ToSI(totalMainSteamReheatApplied, capToZero: true)}J");
-            sb.AppendLine($"Bypass:  \t\t\t{Form1.ToSI(_bypassEnergy * 10, capToZero: true) + "W",-11}\t {Form1.ToSI(totalBypassEnergy, capToZero: true)}J");
-            sb.AppendLine($"Condenser Steam Entry:  \t{Form1.ToSI(_steamEnteringCondenserEnergy * 10, capToZero: true) + "W",-11}\t {Form1.ToSI(totalSteamEnteringCondenserEnergy, capToZero: true)}J");            
-            sb.AppendLine($"Condenser Cooling:  \t{Form1.ToSI(_condenserCoolingEnergy * 10, capToZero: true) + "W",-11}\t {Form1.ToSI(totalCondenserCoolingEnergy, capToZero: true)}J");
-            sb.AppendLine($"Condenser Water Entry:  \t{Form1.ToSI(_waterEnteringCondenserEnergy * 10, capToZero: true) + "W",-11}\t {Form1.ToSI(totalWaterEnteringCondenserEnergy, capToZero: true)}J");
-            sb.AppendLine($"Condenser Outflow:  \t{Form1.ToSI(_condenserOutflowEnergy * 10, capToZero: true) + "W",-11}\t {Form1.ToSI(totalCondenserOutflowEnergy, capToZero: true)}J");
-            sb.AppendLine($"Condenser Outflow Heating:  \t{Form1.ToSI(_condenserOutflowHeatingEnergy * 10, capToZero: true) + "W",-11}\t {Form1.ToSI(totalCondenserOutflowHeatingEnergy, capToZero: true)}J");
-            sb.AppendLine($"Waste Flow To Feedwater:  \t{Form1.ToSI(_otherFlowIntoFeedWaterEnergy * 10, capToZero: true) + "W",-11}\t {Form1.ToSI(totalOtherFlowIntoFeedWaterEnergy, capToZero: true)}J");
-            sb.AppendLine($"Feedwater Flow:  \t\t{Form1.ToSI(_feedWaterEnergy * 10, capToZero: true) + "W",-11}\t {Form1.ToSI(totalFeedWaterEnergy, capToZero: true)}J");
-            sb.AppendLine($"Feedwater Heating:  \t{Form1.ToSI(_feedwaterHeatingEnergy * 10, capToZero: true) + "W",-11}\t {Form1.ToSI(totalFeedwaterHeatingEnergy, capToZero: true)}J");
-            sb.AppendLine($"Feedwater Total:  \t\t{Form1.ToSI((_feedWaterEnergy + _feedwaterHeatingEnergy) * 10, capToZero: true) + "W",-11}\t {Form1.ToSI(totalFeedWaterEnergy + totalFeedwaterHeatingEnergy, capToZero: true)}J");
+            sb.AppendLine($"Fuel: \t\t\t{ToSI(_fuelGeneratedEnergy * 10, capToZero: true) + "W",-11}\t {ToSI(totalFuelGeneratedEnergy, capToZero: true)}J");
+            sb.AppendLine($"Fuel to Coolant:  \t\t{ToSI(_fuelToWaterEnergy * 10, capToZero: true) + "W",-11}\t {ToSI(totalFuelToWaterEnergy, capToZero: true)}J");
+            sb.AppendLine($"Coolant to Steam:  \t\t{ToSI(_coolantToSteamEnergy * 10, capToZero: true) + "W",-11}\t {ToSI(totalCoolantToSteamEnergy, capToZero: true)}J");
+            sb.AppendLine($"Coolant to Vessel:  \t\t{ToSI(_coolantToVesselEnergy * 10, capToZero: true) + "W",-11}\t {ToSI(totalCoolantToVesselEnergy, capToZero: true)}J");
+            sb.AppendLine($"Steam to Pipe:  \t\t{ToSI(_steamToPipeEnergy * 10, capToZero: true) + "W",-11}\t {ToSI(totalSteamToPipeEnergy, capToZero: true)}J");
+            sb.AppendLine($"Pipe to Turbine:  \t\t{ToSI(_pipeToTurbineEnergy * 10, capToZero: true) + "W",-11}\t {ToSI(totalPipeToTurbineEnergy, capToZero: true)}J");
+            sb.AppendLine($"Pipe to MSR:  \t\t{ToSI(PipeToMainSteamReheatEnergy * 10, capToZero: true) + "W",-11}\t {ToSI(totalPipeToMainSteamReheatEnergy, capToZero: true)}J");
+            sb.AppendLine($"MSR Applied:  \t\t{ToSI(MainSteamReheatApplied * 10, capToZero: true) + "W",-11}\t {ToSI(totalMainSteamReheatApplied, capToZero: true)}J");
+            sb.AppendLine($"Bypass:  \t\t\t{ToSI(_bypassEnergy * 10, capToZero: true) + "W",-11}\t {ToSI(totalBypassEnergy, capToZero: true)}J");
+            sb.AppendLine($"Condenser Steam Entry:  \t{ToSI(_steamEnteringCondenserEnergy * 10, capToZero: true) + "W",-11}\t {ToSI(totalSteamEnteringCondenserEnergy, capToZero: true)}J");            
+            sb.AppendLine($"Condenser Cooling:  \t{ToSI(_condenserCoolingEnergy * 10, capToZero: true) + "W",-11}\t {ToSI(totalCondenserCoolingEnergy, capToZero: true)}J");
+            sb.AppendLine($"Condenser Water Entry:  \t{ToSI(_waterEnteringCondenserEnergy * 10, capToZero: true) + "W",-11}\t {ToSI(totalWaterEnteringCondenserEnergy, capToZero: true)}J");
+            sb.AppendLine($"Condenser Outflow:  \t{ToSI(_condenserOutflowEnergy * 10, capToZero: true) + "W",-11}\t {ToSI(totalCondenserOutflowEnergy, capToZero: true)}J");
+            sb.AppendLine($"Condenser Outflow Heating:  \t{ToSI(_condenserOutflowHeatingEnergy * 10, capToZero: true) + "W",-11}\t {ToSI(totalCondenserOutflowHeatingEnergy, capToZero: true)}J");
+            sb.AppendLine($"Waste Flow To Feedwater:  \t{ToSI(_otherFlowIntoFeedWaterEnergy * 10, capToZero: true) + "W",-11}\t {ToSI(totalOtherFlowIntoFeedWaterEnergy, capToZero: true)}J");
+            sb.AppendLine($"Feedwater Flow:  \t\t{ToSI(_feedWaterEnergy * 10, capToZero: true) + "W",-11}\t {ToSI(totalFeedWaterEnergy, capToZero: true)}J");
+            sb.AppendLine($"Feedwater Heating:  \t{ToSI(_feedwaterHeatingEnergy * 10, capToZero: true) + "W",-11}\t {ToSI(totalFeedwaterHeatingEnergy, capToZero: true)}J");
+            sb.AppendLine($"Feedwater Total:  \t\t{ToSI((_feedWaterEnergy + _feedwaterHeatingEnergy) * 10, capToZero: true) + "W",-11}\t {ToSI(totalFeedWaterEnergy + totalFeedwaterHeatingEnergy, capToZero: true)}J");
             sb.AppendLine();
-            //sb.AppendLine($"Mystery Shortfall:  \t\t{Form1.ToSI((_steamToPipeEnergy - _fuelToWaterEnergy - _feedWaterEnergy - _feedwaterHeatingEnergy) * 10, capToZero: true) + "W",-11}\t {Form1.ToSI(totalSteamToPipeEnergy - totalFuelToWaterEnergy - totalFeedWaterEnergy - totalFeedwaterHeatingEnergy, capToZero: true)}J");
+            //sb.AppendLine($"Mystery Shortfall:  \t\t{ToSI((_steamToPipeEnergy - _fuelToWaterEnergy - _feedWaterEnergy - _feedwaterHeatingEnergy) * 10, capToZero: true) + "W",-11}\t {ToSI(totalSteamToPipeEnergy - totalFuelToWaterEnergy - totalFeedWaterEnergy - totalFeedwaterHeatingEnergy, capToZero: true)}J");
             //sb.AppendLine();
-            //sb.AppendLine($"Energy Error:  \t\t{Form1.ToSI(10 * (_steamToPipeEnergy - TurbineOutput / 10 - _condenserCoolingEnergy - _feedWaterEnergy - _feedwaterHeatingEnergy), capToZero: true) + "J",-11}\t{Form1.ToSI(totalSteamToPipeEnergy - totalTurbine - totalCondenserCoolingEnergy - totalFeedWaterEnergy - totalFeedwaterHeatingEnergy, capToZero: true) + "J"}");
-            sb.AppendLine($"Reactor Input: \t {Form1.ToSI(_fuelGeneratedEnergy * 10, capToZero: true)}W");
-            sb.AppendLine($"Pump Input: \t {Form1.ToSI(pumpInput * 10, capToZero: true)}W");
-            sb.AppendLine($"Useful Output :\t {Form1.ToSI(TurbineOutput - TurbineWaste, capToZero: true)}W");
+            //sb.AppendLine($"Energy Error:  \t\t{ToSI(10 * (_steamToPipeEnergy - TurbineOutput / 10 - _condenserCoolingEnergy - _feedWaterEnergy - _feedwaterHeatingEnergy), capToZero: true) + "J",-11}\t{ToSI(totalSteamToPipeEnergy - totalTurbine - totalCondenserCoolingEnergy - totalFeedWaterEnergy - totalFeedwaterHeatingEnergy, capToZero: true) + "J"}");
+            sb.AppendLine($"Reactor Input: \t {ToSI(_fuelGeneratedEnergy * 10, capToZero: true)}W");
+            sb.AppendLine($"Pump Input: \t {ToSI(pumpInput * 10, capToZero: true)}W");
+            sb.AppendLine($"Useful Output :\t {ToSI(TurbineOutput - TurbineWaste, capToZero: true)}W");
             double totalWaste = TurbineWaste + _condenserCoolingEnergy * 10;
-            sb.AppendLine($"Waste Output: \t {Form1.ToSI(totalWaste, capToZero: true)}W");
-            sb.AppendLine($"Total Output: \t {Form1.ToSI(TurbineOutput + totalWaste, capToZero: true)}W");
+            sb.AppendLine($"Waste Output: \t {ToSI(totalWaste, capToZero: true)}W");
+            sb.AppendLine($"Total Output: \t {ToSI(TurbineOutput + totalWaste, capToZero: true)}W");
             //sb.AppendLine($"Instant Efficiency: \t {Math.Round(100 * (TurbineOutput - TurbineWaste) / (TurbineOutput - TurbineWaste + totalWaste),3)}%");
             _bypassEnergy = 0; //Manual reset as it doesn't get set every frame
             return sb.ToString();

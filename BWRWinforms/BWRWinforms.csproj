@@ -53,10 +53,13 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="HeatExchanger.cs" />
     <Compile Include="PIDController.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reactor.cs" />
+    <Compile Include="Sim.cs" />
+    <Compile Include="StmInt.cs" />
     <Compile Include="STM\Boundaries.cs" />
     <Compile Include="STM\Common.cs" />
     <Compile Include="STM\Region1.cs" />
@@ -67,6 +70,7 @@
     <Compile Include="STM\SubRegions.cs" />
     <Compile Include="STM\Transport.cs" />
     <Compile Include="STM\unitConversion.cs" />
+    <Compile Include="Utility.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
